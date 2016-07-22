@@ -1,4 +1,5 @@
 require('babel-polyfill');
+const colors = require('material-ui/styles/colors');
 
 const environment = {
   development: {
@@ -35,5 +36,14 @@ module.exports = Object.assign({
       ]
     }
   },
-
+  muiThemeConfig: {
+    palette: {
+      primary1Color: colors.green500,
+      primary2Color: colors.green700,
+      primary3Color: colors.green100,
+    },
+    avatar: {
+      borderColor: null,
+    }
+  }
 }, environment);

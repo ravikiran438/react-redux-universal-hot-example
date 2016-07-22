@@ -14,12 +14,23 @@ import { ReduxAsyncConnect } from 'redux-async-connect';
 import useScroll from 'scroll-behavior/lib/useStandardScroll';
 
 import getRoutes from './routes';
+import config from './config';
+
+// Import react-grid-layout stylesheets
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
+
+import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 const client = new ApiClient();
 const _browserHistory = useScroll(() => browserHistory)();
 const dest = document.getElementById('content');
 const store = createStore(_browserHistory, client, window.__data);
 const history = syncHistoryWithStore(_browserHistory, store);
+
+// On the client side, the default value of muiThemeConfig.userAgent is navigator.userAgent
+const muiTheme = getMuiTheme(config.muiThemeConfig);
 
 function initSocket() {
   const socket = io('', {path: '/ws'});
@@ -37,11 +48,13 @@ function initSocket() {
 global.socket = initSocket();
 
 const component = (
-  <Router render={(props) =>
-        <ReduxAsyncConnect {...props} helpers={{client}} filter={item => !item.deferred} />
-      } history={history}>
-    {getRoutes(store)}
-  </Router>
+  <MuiThemeProvider muiTheme={muiTheme}>
+    <Router render={(props) =>
+          <ReduxAsyncConnect {...props} helpers={{client}} filter={item => !item.deferred} />
+        } history={history}>
+      {getRoutes(store)}
+    </Router>
+  </MuiThemeProvider>
 );
 
 ReactDOM.render(

@@ -19,6 +19,9 @@ import createHistory from 'react-router/lib/createMemoryHistory';
 import {Provider} from 'react-redux';
 import getRoutes from './routes';
 
+import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+
 const targetUrl = 'http://' + config.apiHost + ':' + config.apiPort;
 const pretty = new PrettyError();
 const app = new Express();
@@ -70,6 +73,11 @@ app.use((req, res) => {
   const memoryHistory = createHistory(req.originalUrl);
   const store = createStore(memoryHistory, client);
   const history = syncHistoryWithStore(memoryHistory, store);
+  const userAgent = req.headers['user-agent'];
+
+  config.muiThemeConfig.userAgent = userAgent || 'all';
+
+  const muiTheme = getMuiTheme(config.muiThemeConfig);
 
   function hydrateOnClient() {
     res.send('<!doctype html>\n' +
@@ -92,13 +100,15 @@ app.use((req, res) => {
       loadOnServer({...renderProps, store, helpers: {client}}).then(() => {
         const component = (
           <Provider store={store} key="provider">
-            <ReduxAsyncConnect {...renderProps} />
+            <MuiThemeProvider muiTheme={muiTheme}>
+              <ReduxAsyncConnect {...renderProps} />
+            </MuiThemeProvider>
           </Provider>
         );
 
         res.status(200);
 
-        global.navigator = {userAgent: req.headers['user-agent']};
+        global.navigator = {userAgent: userAgent};
 
         res.send('<!doctype html>\n' +
           ReactDOM.renderToString(<Html assets={webpackIsomorphicTools.assets()} component={component} store={store}/>));
